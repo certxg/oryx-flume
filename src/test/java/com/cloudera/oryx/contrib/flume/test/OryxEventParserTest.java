@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2014, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
@@ -32,7 +32,7 @@ import com.google.common.collect.Lists;
 /**
  * {@link OryxEventParser} tests
  */
-public class OryxEventParserTest {
+public final class OryxEventParserTest extends Assert {
   @Test
   public void jsonEventParserTest() throws IOException {
     String record;
@@ -53,7 +53,7 @@ public class OryxEventParserTest {
     OryxEventParser ep = new OryxJSONEventParser();
     ep.parseEvent(event, fields, batch);
 
-    Assert.assertEquals("fd156752df3d,488589e7c994,1.0", batch.get(0));
-    Assert.assertEquals("fd156752df3d,natural running", batch.get(1));
+    assertEquals("fd156752df3d,488589e7c994,1.0", batch.get(0));
+    assertEquals("fd156752df3d,natural running", batch.get(1));
   }
 }

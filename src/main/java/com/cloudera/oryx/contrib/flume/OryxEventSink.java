@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2014, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
@@ -18,6 +18,7 @@ package com.cloudera.oryx.contrib.flume;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.flume.Channel;
@@ -31,6 +32,7 @@ import org.apache.flume.conf.Configurable;
 import org.apache.flume.conf.ConfigurationException;
 import org.apache.flume.instrumentation.SinkCounter;
 import org.apache.flume.sink.AbstractSink;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -64,7 +66,7 @@ import com.google.common.collect.Lists;
  * For more information on Oryx see the projects GitHub: https://github.com/cloudera/oryx
  * </p>
  */
-public class OryxEventSink extends AbstractSink implements Configurable {
+public final class OryxEventSink extends AbstractSink implements Configurable {
   private static final Logger log = LoggerFactory.getLogger(OryxEventSink.class);
 
   /** The maximum number of events to take from the channel per transaction */
@@ -104,7 +106,6 @@ public class OryxEventSink extends AbstractSink implements Configurable {
   private SinkCounter sinkCounter;
   private HttpClient client = null;
   
-  /** {@inheritDoc} **/
   @Override
   public void configure(Context context) {
     sinkCounter = new SinkCounter(getName());
@@ -126,11 +127,11 @@ public class OryxEventSink extends AbstractSink implements Configurable {
     
     String parserClass = context.getString(ORYX_EVENT_PARSER);
     try {
-      eventParser = OryxEventParser.class.cast(Class.forName(parserClass).newInstance());
+      eventParser = OryxEventParser.class.cast(Class.forName(parserClass).getConstructor().newInstance());
     } catch (Exception e) {
       throw new ConfigurationException("Unable to load Oryx event parser: " + parserClass, e);
     }
-    
+
     oryxFields = Lists.newArrayList();
     String fields = context.getString(ORYX_FIELDS);
     if (fields != null) {
@@ -138,18 +139,18 @@ public class OryxEventSink extends AbstractSink implements Configurable {
     }
 
     for (int i = 0;; i++) {
-      fields = context.getString(ORYX_FIELDS + "." + i);
+      fields = context.getString(ORYX_FIELDS + '.' + i);
       if (fields == null) {
         break;
       }
       addFields(fields);
     }
     
-    Preconditions.checkState(oryxFields.size() > 0, "No Oryx fields specified");
+    Preconditions.checkState(!oryxFields.isEmpty(), "No Oryx fields specified");
 
     if (log.isDebugEnabled()) {
       log.debug("Batch size: {}", batchSize);
-      log.debug("Oryx URI: {}", oryxUri.toString());
+      log.debug("Oryx URI: {}", oryxUri);
       log.debug("Event parser: {}", eventParser.getClass().getName());
       log.debug("Number of oryxFields: {}", oryxFields.size());      
     }
@@ -170,19 +171,17 @@ public class OryxEventSink extends AbstractSink implements Configurable {
     oryxFields.add(Lists.newArrayList(items));
   }
   
-  /** {@inheritDoc} **/
   @Override
   public synchronized void start() {
-    log.info("Starting Oryx sink: " + getName());
+    log.info("Starting Oryx sink: {}", getName());
     client = new DefaultHttpClient();
     sinkCounter.start();
     super.start();
   }
 
-  /** {@inheritDoc} **/
   @Override
   public synchronized void stop() {
-    log.info("Stopping Oryx sink: " + getName());
+    log.info("Stopping Oryx sink: {}", getName());
     sinkCounter.stop();
     super.stop();    
     log.info("Oryx sink {} stopped: {}", getName(), sinkCounter);
@@ -192,24 +191,24 @@ public class OryxEventSink extends AbstractSink implements Configurable {
    * Sends the given {@code batch} to Oryx in a HTTP POST request.
    * @param batch the batch of records to send to Oryx
    */
-  private void processBatch(List<String> batch) {
+  private void processBatch(Collection<String> batch) {
     if (log.isDebugEnabled()) {
-      log.debug("Sending batch of {} records to Oryx at {}", batch.size(), oryxUri.toString());
+      log.debug("Sending batch of {} records to Oryx at {}", batch.size(), oryxUri);
     }
 
     StringBuilder sb = new StringBuilder();
     for (String record : batch) {
-      sb.append(record + "\n");
+      sb.append(record).append('\n');
     }
 
     HttpPost post = new HttpPost(oryxUri);
-    StringEntity entity = new StringEntity(sb.toString(), ContentType.TEXT_PLAIN);
+    HttpEntity entity = new StringEntity(sb.toString(), ContentType.TEXT_PLAIN);
     post.setEntity(entity);
 
     try {
       HttpResponse response = client.execute(post);
       if (log.isDebugEnabled()) {
-        log.debug("HTTP response from Oryx: '{}'", response.getStatusLine().toString());
+        log.debug("HTTP response from Oryx: '{}'", response.getStatusLine());
       }
       EntityUtils.consumeQuietly(response.getEntity());
     } catch (IOException e) {
@@ -217,7 +216,6 @@ public class OryxEventSink extends AbstractSink implements Configurable {
     }
   }
   
-  /** {@inheritDoc} **/
   @Override
   public Status process() throws EventDeliveryException {
     Status status = Status.READY;
@@ -262,8 +260,7 @@ public class OryxEventSink extends AbstractSink implements Configurable {
     } catch (Throwable t) {
       transaction.rollback();
       if (t instanceof ChannelException) {
-        log.error("Oryx sink {} unable to get event from channel {}", 
-          getName(), channel.getName(), t);
+        log.error("Oryx sink {} unable to get event from channel {}", getName(), channel.getName(), t);
         status = Status.BACKOFF;
       } else {
         throw new EventDeliveryException("Failed to send events", t);

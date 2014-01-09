@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2014, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
@@ -40,5 +40,5 @@ public interface OryxEventParser {
    *          </ul>
    * @param batch the batch of records to send to Oryx
    */
-  public void parseEvent(Event event, List<List<String>> fields, List<String> batch);
+  void parseEvent(Event event, List<List<String>> fields, List<String> batch);
 }

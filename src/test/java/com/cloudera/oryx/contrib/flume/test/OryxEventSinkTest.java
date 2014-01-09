@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2014, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
@@ -24,7 +24,7 @@ import com.cloudera.oryx.contrib.flume.OryxEventSink;
 /**
  * {@link OryxEventSink} tests
  */
-public class OryxEventSinkTest {
+public final class OryxEventSinkTest extends Assert {
   @Test
   public void validContextTest() {
     Context context = new Context();
@@ -34,8 +34,7 @@ public class OryxEventSinkTest {
     context.put("oryxFields.0", "user,search-terms");
     context.put("oryxFields.1", "search-terms,product-code");
 
-    OryxEventSink sink = new OryxEventSink();
-    sink.configure(context);
+    new OryxEventSink().configure(context);
   }
 
   @Test
@@ -45,17 +44,12 @@ public class OryxEventSinkTest {
     context.put("oryxEventParser", "java.lang.String");
     context.put("oryxFields", "user,product-code,1.0");
 
-    Throwable t = null;
-    OryxEventSink sink = new OryxEventSink();
     try {
-      sink.configure(context);
+      new OryxEventSink().configure(context);
+      fail("Invalid oryxEventParser was not caught");
     } catch (Exception e) {
-      t = e;
+      assertTrue(e.getCause() instanceof ClassCastException);
     }
-
-    if (t == null) {
-      Assert.fail("Invalid oryxEventParser was not caught");
-    }
-    Assert.assertEquals(t.getCause() instanceof ClassCastException, true);
   }
+
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2014, Cloudera, Inc. All Rights Reserved.
  *
  * Cloudera, Inc. licenses this file to you under the Apache License,
@@ -36,7 +36,7 @@ import com.jayway.jsonpath.ReadContext;
  * <tt>user-id</tt> and <tt>product-code</tt> from the following JSON object:
  * </p>
  * <p>
- * <code>
+ * {@code
  * {
  *   "user": {
  *     "id": "fd156752df3d",
@@ -48,26 +48,22 @@ import com.jayway.jsonpath.ReadContext;
  *     "product-code": "488589e7c994",
  *     "search-terms": "natural running"
  *   }
- * } 
- * </code>
+ * }
+ * }
  * </p>
  * <p>
  * <tt>oryxFields</tt> should be defined in the Flume configuration as follows:
  * </p>
  * <p>
- * <code>
+ * {@code
  * AgentName.sinks.SinkName.oryxFields = $.user.id, $.product.product-code, 1.0
- * </code>
+ * }
  * </p>
  * See https://code.google.com/p/json-path for more information.
  */
-public class OryxJSONEventParser implements OryxEventParser {
+public final class OryxJSONEventParser implements OryxEventParser {
   private static final Logger log = LoggerFactory.getLogger(OryxJSONEventParser.class);
 
-  public OryxJSONEventParser() {
-  }
-
-  /** {@inheritDoc} */
   @Override
   public void parseEvent(Event event, List<List<String>> fields, List<String> batch) {
     ReadContext context = JsonPath.parse(new String(event.getBody()));
@@ -91,7 +87,7 @@ public class OryxJSONEventParser implements OryxEventParser {
           record.setLength(0);
           break;
         }
-        record.append(StringEscapeUtils.escapeCsv(val) + ",");
+        record.append(StringEscapeUtils.escapeCsv(val)).append(',');
       }
 
       if (record.length() > 0) {
@@ -102,7 +98,7 @@ public class OryxJSONEventParser implements OryxEventParser {
           record.deleteCharAt(record.length() - 1);
         }
         if (log.isDebugEnabled()) {
-          log.debug("Adding record '{}' to batch", record.toString());
+          log.debug("Adding record '{}' to batch", record);
         }
         batch.add(record.toString());
       }
