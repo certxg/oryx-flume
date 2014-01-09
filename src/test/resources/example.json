@@ -1,0 +1,13 @@
+{
+  "datetime_UTC": "2013-11-12T10:00:01.523Z",
+  "user": {
+    "id": "fd156752df3d",
+    "email": "kinley@cloudera.com"
+  },
+  "product": {
+    "group": "running shoes",
+    "product-name": "Inov-8 Road-X Lite",
+    "product-code": "488589e7c994",
+    "search-terms": "natural running"
+  }
+}
