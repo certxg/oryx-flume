@@ -19,30 +19,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.cloudera.oryx</groupId>
 	<artifactId>oryx-flume</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>Oryx Flume</name>
-	<description>A custom Flume Sink to push data in near real-time to Oryx's serving layer</description>
-
-	<repositories>
-		<repository>
-			<id>central</id>
-			<name>Maven Central</name>
-			<url>http://repo1.maven.org/maven2/</url>
-		</repository>
-		<repository>
-			<id>cloudera</id>
-			<url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
+	<version>0.1.0-SNAPSHOT</version>
+	<name>Oryx Flume integration</name>
+	<description>A custom Apache Flume Sink to push data in near real-time to Oryx's Serving Layer</description>
 
 	<properties>
-		<flume.version>1.4.0-cdh4.5.0</flume.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<flume.version>1.4.0</flume.version>
+    <slf4j.version>1.7.5</slf4j.version>
 	</properties>
 
 	<dependencies>
@@ -57,6 +41,16 @@
 			<artifactId>flume-ng-core</artifactId>
 			<version>${flume.version}</version>
 			<scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+      </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.jayway.jsonpath</groupId>
@@ -67,18 +61,42 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
 			<version>4.2.5</version>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-			<scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.5</version>
+			<version>${slf4j.version}</version>
 		</dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
+      <version>${slf4j.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <version>${slf4j.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <version>${slf4j.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
 	</dependencies>
 
 	<build>
